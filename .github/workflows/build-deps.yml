@@ -19,7 +19,7 @@ jobs:
     - name: Build LLVM WebAssembly arm64
       run: |
         Set-PSDebug -Trace 1
-        $env:path
-        ls "$env:ProgramW6432\Microsoft Visual Studio\2022"
+        Get-ChildItem Env: | Format-Table -Wrap -AutoSize
+        ls "$env:ProgramW6432\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvars*"
         cl
         ls
