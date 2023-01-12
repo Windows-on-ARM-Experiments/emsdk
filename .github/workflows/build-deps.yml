@@ -19,7 +19,7 @@ jobs:
     - name: Build LLVM WebAssembly arm64
       run: |
         Set-PSDebug -Trace 1
-        Get-ChildItem Env: | Format-Table -Wrap -AutoSize
-        ls "$env:ProgramW6432\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars*"
-        cl
-        ls
+        git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --branch main --depth 1
+        cd llvm-project
+        cmake -S llvm -B build -DLLVM_ENABLE_PROJECTS='lld;clang' -DLLVM_TARGETS_TO_BUILD="host;WebAssembly" -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF
+        cmake --build build --config MinSizeRel
