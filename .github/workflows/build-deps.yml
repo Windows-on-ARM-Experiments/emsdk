@@ -20,6 +20,6 @@ jobs:
       run: |
         Set-PSDebug -Trace 1
         $env:path
-        ls "$env:ProgramW6432\Microsoft Visual Studio"
+        ls "$env:ProgramW6432\Microsoft Visual Studio\2022"
         cl
         ls
