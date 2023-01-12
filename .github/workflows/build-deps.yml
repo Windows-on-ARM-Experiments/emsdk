@@ -18,5 +18,7 @@ jobs:
     
     - name: Build LLVM WebAssembly arm64
       run: |
+        Set-PSDebug -Trace 1
         $env:path
+        cl
         ls
