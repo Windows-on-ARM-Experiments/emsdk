@@ -21,5 +21,8 @@ jobs:
         Set-PSDebug -Trace 1
         git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --branch main --depth 1
         cd llvm-project
-        cmake -S llvm -B build -DLLVM_ENABLE_PROJECTS='lld;clang' -DLLVM_TARGETS_TO_BUILD="AArch64;WebAssembly" -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF
-        cmake --build build --config MinSizeRel
+        cmake -S llvm -B build_host -DLLVM_ENABLE_PROJECTS='lld;clang' -DLLVM_TARGETS_TO_BUILD=""
+        cmake --build .\build_host --target llvm-tblgen --config MinSizeRel
+        cmake --build .\build_host --target clang-tblgen --config MinSizeRel
+        cmake -S llvm -B build_arm64 -A ARM64 -DLLVM_TABLEGEN="$(Get-Location)\build_host\MinSizeRel\bin\llvm-tblgen" -DCLANG_TABLEGEN="$(Get-Location)\build_host\MinSizeRel\bin\clang-tblgen" -DLLVM_ENABLE_PROJECTS='lld;clang' -DLLVM_TARGETS_TO_BUILD="host;WebAssembly" -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF
+        cmake --build build_arm64 --config MinSizeRel
