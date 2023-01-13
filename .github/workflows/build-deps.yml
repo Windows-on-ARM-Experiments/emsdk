@@ -3,14 +3,20 @@ name: Build emsdk dependencies
 on:
   workflow_dispatch:
     inputs:
-      branch:
+      llvm_build:
         description: 'LLVM Webassembly arm64'
+        required: false
+        default: false
+        type: boolean
+      nodejs_build:
+        description: 'Node.js arm64'
         required: false
         default: false
         type: boolean
 
 jobs:
   build-llvm-webassembly-arm64:
+    if: ${{ inputs.llvm_build }}
 
     runs-on: windows-latest
 
@@ -24,6 +30,19 @@ jobs:
         cmake -S llvm -B build_host -DLLVM_ENABLE_PROJECTS='lld;clang' -DLLVM_TARGETS_TO_BUILD=""
         cmake --build build_host --target llvm-tblgen --config MinSizeRel
         cmake --build build_host --target clang-tblgen --config MinSizeRel
-        & "$(Get-Location)\build_host\MinSizeRel\bin\llvm-tblgen.exe" --help
-        cmake -S llvm -B build_arm64 -A ARM64 -DLLVM_TABLEGEN="$(Get-Location)\build_host\MinSizeRel\bin\llvm-tblgen.exe" -DCLANG_TABLEGEN="$(Get-Location)\build_host\MinSizeRel\bin\clang-tblgen.exe" -DLLVM_ENABLE_PROJECTS='lld;clang' -DLLVM_TARGETS_TO_BUILD="host;WebAssembly" -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF
-        cmake --build build_arm64 --config MinSizeRel
+#        cmake -S llvm -B build_arm64 -A ARM64 -DLLVM_TABLEGEN="$(Get-Location)\build_host\MinSizeRel\bin\llvm-tblgen.exe" -DCLANG_TABLEGEN="$(Get-Location)\build_host\MinSizeRel\bin\clang-tblgen.exe" -DLLVM_ENABLE_PROJECTS='lld;clang' -DLLVM_TARGETS_TO_BUILD="host;WebAssembly" -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF
+#        cmake --build build_arm64 --config MinSizeRel
+
+  build-nodejs-arm64:
+    if: ${{ inputs.nodejs_build }}
+
+    runs-on: windows-latest
+
+    steps:
+
+    - name: Build Node.js arm64
+      run: |
+        Set-PSDebug -Trace 1
+        git clone https://github.com/nodejs/node.git --single-branch --depth 1
+        cd node
+        .\vcbuild openssl-no-asm arm64
