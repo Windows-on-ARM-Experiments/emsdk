@@ -33,7 +33,7 @@ jobs:
         cmake -S llvm -B build_arm64 -A ARM64 `
           -DLLVM_TABLEGEN="$llvm_root\build_host\MinSizeRel\bin\llvm-tblgen.exe" `
           -DCLANG_TABLEGEN="$llvm_root\build_host\MinSizeRel\bin\clang-tblgen.exe" `
-          -DCMAKE_NM="$llvm_root\build_host\MinSizeRel\bin\llvm-nm.exe" `
+          -DLLVM_NM="$llvm_root\build_host\MinSizeRel\bin\llvm-nm.exe" `
           -DLLVM_ENABLE_PROJECTS='lld;clang' -DLLVM_TARGETS_TO_BUILD="host;WebAssembly" `
           -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF
         cmake --build build_arm64 --config MinSizeRel
