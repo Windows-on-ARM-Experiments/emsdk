@@ -23,11 +23,11 @@ jobs:
   build-llvm-webassembly-arm64:
     if: ${{ inputs.llvm_build }}
 
-    runs-on: windows-latest
+    runs-on: [self-hosted, Windows, ARM64]
 
     steps:
     
-    - name: Build LLVM WebAssembly arm64 (Cross Compilation)
+    - name: Build LLVM WebAssembly arm64
       run: |
         Set-PSDebug -Trace 1
         git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --branch main --depth 1
