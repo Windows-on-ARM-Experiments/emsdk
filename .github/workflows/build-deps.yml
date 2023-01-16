@@ -24,6 +24,7 @@ jobs:
     if: ${{ inputs.llvm_build }}
 
     runs-on: [self-hosted, Windows, ARM64]
+    timeout-minutes: 600
 
     steps:
     
