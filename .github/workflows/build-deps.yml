@@ -70,6 +70,6 @@ jobs:
     - name: Build Node.js arm64
       run: |
         Set-PSDebug -Trace 1
-        git clone https://github.com/Windows-on-ARM-Experiments/node.git --single-branch --depth 1
+        git clone https://github.com/Windows-on-ARM-Experiments/node.git --single-branch -b fix-arm64-compilation --depth 1
         cd node
         .\vcbuild openssl-no-asm arm64
