@@ -30,8 +30,7 @@ jobs:
     - name: Build LLVM WebAssembly arm64
       run: |
         Set-PSDebug -Trace 1
-        rm -r llvm-project
-        git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --branch main --depth 1
+        git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --depth 1
         cd llvm-project
         cmake -S llvm -B build_arm64 -A ARM64 `
           -DLLVM_ENABLE_PROJECTS='lld;clang' -DLLVM_TARGETS_TO_BUILD="host;WebAssembly" `
