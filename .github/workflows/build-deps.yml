@@ -64,7 +64,7 @@ jobs:
   build-nodejs-arm64:
     if: ${{ inputs.nodejs_build }}
 
-    runs-on: windows-latest
+    runs-on: [self-hosted, Windows, ARM64]
 
     steps:
 
