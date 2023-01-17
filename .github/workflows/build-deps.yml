@@ -80,7 +80,7 @@ jobs:
         cd node
         .\vcbuild openssl-no-asm arm64
 
-  build-nodejs-arm64:
+  release-on-github:
     if: ${{ inputs.release }}
 
     runs-on: [self-hosted, Windows, ARM64]
