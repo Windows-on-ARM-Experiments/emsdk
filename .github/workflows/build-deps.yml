@@ -18,6 +18,11 @@ on:
         required: false
         default: false
         type: boolean
+      release:
+        description: 'Release Testing arm64'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build-llvm-webassembly-arm64:
@@ -74,3 +79,16 @@ jobs:
         git clone https://github.com/Windows-on-ARM-Experiments/node.git --single-branch -b fix-arm64-compilation --depth 1
         cd node
         .\vcbuild openssl-no-asm arm64
+
+  build-nodejs-arm64:
+    if: ${{ inputs.release }}
+
+    runs-on: [self-hosted, Windows, ARM64]
+
+    steps:
+
+    - name: Publish release on github
+      shell: bash
+      run: |
+        pwd
+        ls
