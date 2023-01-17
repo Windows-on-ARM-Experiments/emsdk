@@ -89,6 +89,4 @@ jobs:
 
     - name: Publish release on github
       shell: C:\Program` Files\Git\bin\bash.exe --noprofile --norc -eo pipefail {0}
-      run: |
-        pwd
-        ls
+      run: pwd
