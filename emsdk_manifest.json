@@ -557,6 +557,28 @@
     "custom_uninstall_script": "uninstall_binaryen"
   },
   {
+    "id": "node",
+    "version": "main",
+    "bitness": 32,
+    "append_bitness": false,
+    "url": "https://github.com/Windows-on-ARM-Experiments/node.git",
+    "git_branch": "main",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_node",
+    "custom_uninstall_script": "uninstall_node"
+  },
+  {
+    "id": "node",
+    "version": "main",
+    "bitness": 64,
+    "append_bitness": false,
+    "url": "https://github.com/Windows-on-ARM-Experiments/node.git",
+    "git_branch": "force-host-arch",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_node",
+    "custom_uninstall_script": "uninstall_node"
+  },
+  {
     "id": "emscripten",
     "version": "main",
     "bitness": 32,

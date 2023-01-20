@@ -1523,6 +1523,57 @@ def emscripten_post_install(tool):
   return True
 
 
+# Node build scripts:
+def node_build_root(tool):
+  build_root = tool.installation_path().strip()
+  if build_root.endswith('/') or build_root.endswith('\\'):
+    build_root = build_root[:-1]
+  generator_prefix = cmake_generator_prefix()
+  build_root = build_root + generator_prefix + '_' + str(tool.bitness) + 'bit_node'
+  return build_root
+
+
+def uninstall_node(tool):
+  debug_print('uninstall_node(' + str(tool) + ')')
+
+  # TODO: Delete binaries.
+
+
+def build_node(tool):
+  debug_print('build_node(' + str(tool) + ')')
+  
+  src_root = tool.installation_path()
+  build_root = node_build_root(tool)
+
+  if not os.path.isdir(build_root):
+    os.mkdir(build_root)
+
+  # Build  
+  if WINDOWS:
+    success = node_vcbuild(build_root, src_root)
+  else:
+    # TODO: Add other platforms.
+    pass
+
+  # TODO: Copy binaries from src_root to build_root.
+
+  return success
+
+
+def node_vcbuild(build_root, src_root):
+  cmdline = [os.path.join(src_root, 'vcbuild.bat'), 'prefix', build_root]
+  if ARCH == 'aarch64':
+    # TODO: Add cross-compilation?
+    cmdline += ['openssl-no-asm', 'arm64', 'arm64-host']
+  result = subprocess.check_call(cmdline, cwd=build_root, env=os.environ.copy())
+  if result != 0:
+      errlog('vcbuild.bat invocation failed with exit code ' + result + '!')
+      errlog('Working directory: ' + build_root)
+      return False
+
+  return True
+
+
 # Binaryen build scripts:
 def binaryen_build_root(tool):
   build_root = tool.installation_path().strip()
@@ -2058,6 +2109,8 @@ class Tool(object):
         # 'build_fastcomp' is a special one that does the download on its
         # own, others do the download manually.
         pass
+      elif self.custom_install_script == 'build_node':
+        success = build_node(self)
       elif self.custom_install_script == 'build_binaryen':
         success = build_binaryen_tool(self)
       else:
