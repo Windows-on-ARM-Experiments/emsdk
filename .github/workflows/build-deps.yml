@@ -28,7 +28,7 @@ jobs:
   build-llvm-webassembly-arm64:
     if: ${{ inputs.llvm_build }}
 
-    runs-on: [self-hosted, Windows, ARM64]
+    runs-on: [self-hosted, Windows, ARM64, WASM]
     timeout-minutes: 600
 
     steps:
@@ -69,7 +69,7 @@ jobs:
   build-nodejs-arm64:
     if: ${{ inputs.nodejs_build }}
 
-    runs-on: [self-hosted, Windows, ARM64]
+    runs-on: [self-hosted, Windows, ARM64, WASM]
 
     steps:
 
@@ -83,7 +83,7 @@ jobs:
   release-on-github:
     if: ${{ inputs.release }}
 
-    runs-on: [self-hosted, Windows, ARM64]
+    runs-on: [self-hosted, Windows, ARM64, WASM]
 
     steps:
 
