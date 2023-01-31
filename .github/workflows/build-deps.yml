@@ -52,7 +52,7 @@ jobs:
           -DLLVM_INCLUDE_TESTS=OFF `
           -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON `
           -DLLVM_TARGETS_TO_BUILD='host;WebAssembly' `
-          -DLLVM_TOOL_LTO_BUILD=OFF ` `
+          -DLLVM_TOOL_LTO_BUILD=OFF `
           -DLLVM_TOOLCHAIN_TOOLS='clang;lld;llvm-ar;llvm-addr2line;llvm-cxxfilt;llvm-dwarfdump;llvm-dwp;llvm-nm;llvm-objcopy;llvm-objdump;llvm-ranlib;llvm-readobj;llvm-size;llvm-strings;llvm-strip;llvm-symbolizer;clang-resource-headers'
         cmake --build build_arm64 --config MinSizeRel
 
