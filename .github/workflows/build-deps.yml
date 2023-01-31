@@ -41,8 +41,9 @@ jobs:
         cmake -S llvm -B build_arm64 -A ARM64 `
           -DCLANG_ENABLE_ARCMT=OFF `
           -DCLANG_ENABLE_STATIC_ANALYZER=OFF `
+          -DCMAKE_CXX_COMPILER_LAUNCHER='ccache' `
           -DCMAKE_LINKER='C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Tools\Llvm\x64\bin\lld-link.exe' `
-          -DLLVM_DISTRIBUTION_COMPONENTS='distribution;install-distribution' `
+          -DLLVM_DISTRIBUTION_COMPONENTS='clang;lld;llvm-ar;llvm-addr2line;llvm-cxxfilt;llvm-dwarfdump;llvm-dwp;llvm-nm;llvm-objcopy;llvm-objdump;llvm-ranlib;llvm-readobj;llvm-size;llvm-strings;llvm-strip;llvm-symbolizer;clang-resource-headers' `
           -DLLVM_ENABLE_ASSERTIONS=OFF `
           -DLLVM_ENABLE_BINDINGS=OFF `
           -DLLVM_ENABLE_LIBXML2=OFF `
