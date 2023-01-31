@@ -39,16 +39,20 @@ jobs:
         git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --depth 1
         cd llvm-project
         cmake -S llvm -B build_arm64 -A ARM64 `
-          -DLLVM_ENABLE_LIBXML2=OFF `
-          -DLLVM_INCLUDE_EXAMPLES=OFF `
-          -DLLVM_ENABLE_BINDINGS=OFF `
-          -DLLVM_TOOL_LTO_BUILD=OFF `
-          -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON `
-          -DLLVM_ENABLE_PROJECTS='lld;clang' `
-          -DLLVM_TARGETS_TO_BUILD="host;WebAssembly" `
-          -DLLVM_INCLUDE_TESTS=OFF `
           -DCLANG_ENABLE_ARCMT=OFF `
-          -DCLANG_ENABLE_STATIC_ANALYZER=OFF
+          -DCLANG_ENABLE_STATIC_ANALYZER=OFF `
+          -DLLVM_DISTRIBUTION_COMPONENTS='distribution;install-distribution' `
+          -DLLVM_ENABLE_ASSERTIONS=OFF `
+          -DLLVM_ENABLE_BINDINGS=OFF `
+          -DLLVM_ENABLE_LIBXML2=OFF `
+          -DLLVM_ENABLE_LTO=Thin `
+          -DLLVM_ENABLE_PROJECTS='lld;clang' `
+          -DLLVM_INCLUDE_EXAMPLES=OFF `
+          -DLLVM_INCLUDE_TESTS=OFF `
+          -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON `
+          -DLLVM_TARGETS_TO_BUILD="host;WebAssembly" `
+          -DLLVM_TOOL_LTO_BUILD=OFF `
+          -DLLVM_TOOLCHAIN_TOOLS='clang;lld;llvm-ar;llvm-addr2line;llvm-cxxfilt;llvm-dwarfdump;llvm-dwp;llvm-nm;llvm-objcopy;llvm-objdump;llvm-ranlib;llvm-readobj;llvm-size;llvm-strings;llvm-strip;llvm-symbolizer;clang-resource-headers'
         cmake --build build_arm64 --config MinSizeRel
 
   build-llvm-webassembly-arm64_cross_compilation:
