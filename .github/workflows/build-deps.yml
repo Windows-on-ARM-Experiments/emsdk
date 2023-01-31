@@ -41,7 +41,7 @@ jobs:
         cmake -S llvm -B build_arm64 -A ARM64 `
           -DCLANG_ENABLE_ARCMT=OFF `
           -DCLANG_ENABLE_STATIC_ANALYZER=OFF `
-          -DCMAKE_LINKER='lld-link'
+          -DCMAKE_LINKER='lld-link' `
           -DLLVM_DISTRIBUTION_COMPONENTS='distribution;install-distribution' `
           -DLLVM_ENABLE_ASSERTIONS=OFF `
           -DLLVM_ENABLE_BINDINGS=OFF `
