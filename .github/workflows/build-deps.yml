@@ -125,6 +125,13 @@ jobs:
         cd ../emscripten_package
         zip -r ../emscripten_package.zip .
 
+    - name: Archive emscripten_package.zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: emscripten_package.zip
+        path: emscripten_package.zip
+        retention-days: 1
+
   release-on-github:
     if: ${{ inputs.release }}
 
