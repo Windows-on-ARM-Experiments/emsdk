@@ -120,7 +120,7 @@ jobs:
       run: |
         git clone https://github.com/emscripten-core/emscripten.git --single-branch --depth 1
         cd emscripten
-        .\tools\install.py ../emscripten_package
+        ./tools/install.py ../emscripten_package
         npm ci --production --no-optional ../emscripten_package
         npm install --production --no-optional google-closure-compiler-windows@20220502.0.0 ../emscripten_package
 
