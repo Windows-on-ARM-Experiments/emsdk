@@ -13,6 +13,11 @@ on:
         required: false
         default: false
         type: boolean
+      emscripten_build:
+        description: 'Emscripten'
+        required: false
+        default: false
+        type: boolean
       nodejs_build:
         description: 'Node.js arm64'
         required: false
@@ -103,6 +108,21 @@ jobs:
         git clone https://github.com/Windows-on-ARM-Experiments/node.git --single-branch -b fix-arm64-compilation --depth 1
         cd node
         .\vcbuild openssl-no-asm arm64
+
+  emscripten_build:
+    if: ${{ inputs.emscripten_build }}
+
+    runs-on: [ubuntu-latest]
+
+    steps:
+
+    - name: Build Emscripten
+      run: |
+        git clone https://github.com/emscripten-core/emscripten.git --single-branch --depth 1
+        cd emscripten
+        .\tools\install.py ../emscripten_package
+        npm ci --production --no-optional ../emscripten_package
+        npm install --production --no-optional google-closure-compiler-windows@20220502.0.0 ../emscripten_package
 
   release-on-github:
     if: ${{ inputs.release }}
