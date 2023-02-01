@@ -40,8 +40,7 @@ jobs:
         git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --depth 1
         cd llvm-project
         if exist build_arm64 rmdir /s /q build_arm64
-        set VSCMD_DEBUG=2
-        "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" arm64
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" arm64
         cmake -G Ninja -S llvm -B build_arm64 ^
           -DCLANG_ENABLE_ARCMT=OFF ^
           -DCLANG_ENABLE_STATIC_ANALYZER=OFF ^
