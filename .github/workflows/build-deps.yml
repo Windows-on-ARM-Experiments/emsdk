@@ -34,7 +34,7 @@ jobs:
     steps:
     
     - name: Build LLVM WebAssembly arm64
-      shell: "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" arm64
+      shell: C:\Program` Files\Microsoft` Visual` Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat arm64
       run: |
         git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --depth 1
         cd llvm-project
