@@ -97,11 +97,11 @@ jobs:
         Compress-Archive -Path bin,lib\clang -DestinationPath llvm-arm64
 
     - name: Archive llvm-arm64.zip
-    uses: actions/upload-artifact@v3
-    with:
-      name: llvm-arm64.zip
-      path: llvm-project/build_arm64/llvm-arm64.zip
-      retention-days: 1
+      uses: actions/upload-artifact@v3
+      with:
+        name: llvm-arm64.zip
+        path: llvm-project/build_arm64/llvm-arm64.zip
+        retention-days: 1
 
   build-llvm-webassembly-arm64_cross_compilation:
     if: ${{ inputs.llvm_build_llvm_build_cross_compilation }}
