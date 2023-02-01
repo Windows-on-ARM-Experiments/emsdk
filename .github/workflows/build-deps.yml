@@ -110,7 +110,7 @@ jobs:
         .\vcbuild openssl-no-asm arm64
 
   emscripten_build:
-    if: ${{ inputs.emscripten_build }}
+    if: ${{ inputs.emscripten_build }} || ${{ inputs.emsdk_build }}
 
     runs-on: [ubuntu-latest]
 
@@ -134,6 +134,7 @@ jobs:
 
   emsdk_build:
     if: ${{ inputs.emsdk_build }}
+    needs: emscripten_build
 
     runs-on: [ubuntu-latest]
 
