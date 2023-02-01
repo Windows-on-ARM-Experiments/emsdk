@@ -23,8 +23,8 @@ on:
         required: false
         default: false
         type: boolean
-      release:
-        description: 'Release Testing arm64'
+      emsdk_build:
+        description: 'emsdk arm64'
         required: false
         default: false
         type: boolean
@@ -132,13 +132,16 @@ jobs:
         path: emscripten_package.zip
         retention-days: 1
 
-  release-on-github:
-    if: ${{ inputs.release }}
+  emsdk_build:
+    if: ${{ inputs.emsdk_build }}
 
-    runs-on: [self-hosted, Windows, ARM64, WASM]
+    runs-on: [ubuntu-latest]
 
     steps:
 
-    - name: Publish release on github
-      shell: C:\Program` Files\Git\bin\bash.exe --noprofile --norc -eo pipefail -c "{0}"
-      run: pwd
+    - uses: actions/download-artifact@v3
+      with:
+        name: emscripten_package.zip
+        
+    - name: Build emsdk arm64
+      run: ls
