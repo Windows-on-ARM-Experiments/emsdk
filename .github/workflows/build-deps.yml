@@ -145,4 +145,9 @@ jobs:
         name: emscripten_package.zip
         
     - name: Build emsdk arm64
-      run: ls
+      run: |
+        ls
+        mkdir -p emsdk/emscripten
+        unzip emscripten_package.zip -d emsdk/emscripten
+        find .
+
