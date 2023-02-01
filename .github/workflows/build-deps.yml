@@ -123,13 +123,12 @@ jobs:
         ./tools/install.py ../emscripten_package
         npm ci --production --no-optional ../emscripten_package
         cd ../emscripten_package
-        zip -r ../emscripten_package.zip .
 
     - name: Archive emscripten_package.zip
       uses: actions/upload-artifact@v3
       with:
         name: emscripten_package.zip
-        path: emscripten_package.zip
+        path: emscripten_package/
         retention-days: 1
 
   release-on-github:
