@@ -36,7 +36,6 @@ jobs:
     - name: Build LLVM WebAssembly arm64
       shell: cmd
       run: |
-        echo on
         git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --depth 1
         cd llvm-project
         if exist build_arm64 rmdir /s /q build_arm64
@@ -44,8 +43,10 @@ jobs:
         cmake -G Ninja -S llvm -B build_arm64 ^
           -DCLANG_ENABLE_ARCMT=OFF ^
           -DCLANG_ENABLE_STATIC_ANALYZER=OFF ^
+          -DCMAKE_BUILD_TYPE=Release ^
           -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON ^
           -DCMAKE_CXX_COMPILER_LAUNCHER='ccache' ^
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ^
           -DCMAKE_LINKER="C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Tools\Llvm\x64\bin\lld-link.exe" ^
           -DLLVM_BUILD_LLVM_DYLIB=OFF ^
           -DLLVM_LINK_LLVM_DYLIB=OFF ^
@@ -53,7 +54,6 @@ jobs:
           -DLLVM_ENABLE_ASSERTIONS=OFF ^
           -DLLVM_ENABLE_BINDINGS=OFF ^
           -DLLVM_ENABLE_LIBXML2=OFF ^
-          -DLLVM_ENABLE_LTO=Thin ^
           -DLLVM_ENABLE_PROJECTS='lld;clang' ^
           -DLLVM_ENABLE_TERMINFO=ON ^
           -DLLVM_INCLUDE_EXAMPLES=OFF ^
