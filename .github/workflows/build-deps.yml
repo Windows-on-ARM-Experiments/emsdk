@@ -167,7 +167,7 @@ jobs:
     if: ${{ inputs.emsdk_build }}
     needs: [emscripten_build,build-llvm-webassembly-arm64]
 
-    runs-on: [ubuntu-latest]
+    runs-on: [windows-latest]
 
     steps:
 
@@ -182,6 +182,15 @@ jobs:
     - name: Build emsdk arm64
       run: |
         ls
-        mkdir -p emsdk/emscripten
-        unzip emscripten_package.zip -d emsdk/emscripten
-        unzip llvm-arm64.zip -d emsdk
+        New-Item -ItemType Directory -Force -Path emsdk/emscripten
+        Expand-Archive -LiteralPath emscripten_package.zip -DestinationPath emsdk\emscripten
+        Expand-Archive -LiteralPath llvm-arm64.zip -DestinationPath emsdk
+        cd emsdk
+        Compress-Archive -Path . -DestinationPath emsdk-arm64
+
+    - name: Archive llvm-arm64.zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: emsdk-arm64.zip
+        path: emsdk/emsdk-arm64.zip
+
