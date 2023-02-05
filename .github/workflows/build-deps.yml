@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       llvm_build:
-        description: 'LLVM Webassembly arm64'
+        description: 'LLVM WebAssembly Arm64'
         required: false
         default: false
         type: boolean
       llvm_build_cross_compilation:
-        description: 'LLVM Webassembly arm64 (cross compilation)'
+        description: 'LLVM WebAssembly Arm64 (cross compilation)'
         required: false
         default: false
         type: boolean
@@ -24,17 +24,17 @@ on:
         default: false
         type: boolean
       emscripten_build:
-        description: 'Emscripten'
+        description: 'Emscripten Arm64'
         required: false
         default: false
         type: boolean
       nodejs_build:
-        description: 'Node.js arm64'
+        description: 'Node.js Arm64'
         required: false
         default: false
         type: boolean
       wasm_binaries_build:
-        description: 'WASM binaries arm64'
+        description: 'WASM binaries Arm64'
         required: false
         default: false
         type: boolean
@@ -48,7 +48,7 @@ jobs:
 
     steps:
     
-    - name: Build LLVM WebAssembly arm64
+    - name: Build LLVM WebAssembly for Arm64
       shell: cmd
       run: |
         git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --depth 1
@@ -108,7 +108,7 @@ jobs:
     - name: Archive llvm-arm64.zip
       uses: actions/upload-artifact@v3
       with:
-        name: llvm-arm64.zip
+        name: llvm-arm64
         path: llvm-project/build_arm64/llvm-arm64.zip
         retention-days: 1
 
@@ -119,7 +119,7 @@ jobs:
 
     steps:
     
-    - name: Build LLVM WebAssembly arm64 (Cross Compilation)
+    - name: Build LLVM WebAssembly for Arm64 (Cross Compilation)
       run: |
         Set-PSDebug -Trace 1
         git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --branch main --depth 1
@@ -180,7 +180,7 @@ jobs:
     - name: Archive binaryen-arm64.zip
       uses: actions/upload-artifact@v3
       with:
-        name: binaryen-arm64.zip
+        name: binaryen-arm64
         path: binaryen/binaryen-arm64.zip
         retention-days: 1
 
@@ -191,12 +191,45 @@ jobs:
 
     steps:
 
-    - name: Build Node.js arm64
+    - name: Add 7-Zip to PATH
       run: |
-        Set-PSDebug -Trace 1
+        echo "PATH=$env:PATH;C:\Program Files\7-Zip" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    - name: Check 7-Zip installed
+      run: |
+        7z
+
+    - name: Build Node.js for Arm64
+      run: |
         git clone https://github.com/Windows-on-ARM-Experiments/node.git --single-branch -b fix-arm64-compilation --depth 1
         cd node
-        .\vcbuild openssl-no-asm arm64
+        .\vcbuild.bat arm64 package
+
+    - name: Prepare Node.js package
+      run: |
+        cd .\node\out\Release
+        Remove-Item -Path .\tmp -Recurse -Force -ErrorAction Ignore
+        New-Item -ItemType Directory -Force -Path .\tmp\node-v20.0.0-win-arm64\bin
+        cp .\node-v20.0.0-win-arm64\* .\tmp\node-v20.0.0-win-arm64\bin
+        ls .\tmp\node-v20.0.0-win-arm64\bin
+        ls .\tmp\node-v20.0.0-win-arm64\bin\node_modules
+        Compress-Archive -Path .\tmp\node-v20.0.0-win-arm64 -DestinationPath node-v20.0.0-win-arm64-2.zip
+
+    - name: Archive node-v20.0.0-win-arm64.zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: node-v20.0.0-win-arm64
+        path: node/out/Release/tmp/*
+
+    - name: Archive node-v20.0.0-win-arm64-2.zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: node-v20.0.0-win-arm64-2
+        path: node/out/Release/node-v20.0.0-win-arm64-2.zip
+
+    - name: Cleanup
+      run: |
+        Remove-Item -Path .\node\out\Release\tmp -Recurse -Force -ErrorAction Ignore
 
   build-emscripten:
     if: ${{ inputs.emscripten_build || inputs.wasm_binaries_build }}
@@ -212,13 +245,13 @@ jobs:
         ./tools/install.py ../emscripten_package
         npm ci --production --no-optional ../emscripten_package
         cd ../emscripten_package
-        zip -r ../emscripten_package.zip .
+        zip -r ../emscripten-package.zip .
 
-    - name: Archive emscripten_package.zip
+    - name: Archive emscripten-package.zip
       uses: actions/upload-artifact@v3
       with:
-        name: emscripten_package.zip
-        path: emscripten_package.zip
+        name: emscripten-package
+        path: emscripten-package.zip
         retention-days: 1
 
   build-wasm-binaries:
@@ -231,21 +264,21 @@ jobs:
 
     - uses: actions/download-artifact@v3
       with:
-        name: emscripten_package.zip
+        name: emscripten-package
 
     - uses: actions/download-artifact@v3
       with:
-        name: llvm-arm64.zip
+        name: llvm-arm64
 
     - uses: actions/download-artifact@v3
       with:
-        name: binaryen-arm64.zip
+        name: binaryen-arm64
 
     - name: Pack wasm-binaries for Arm64
       run: |
         ls
         New-Item -ItemType Directory -Force -Path emsdk/emscripten
-        Expand-Archive -LiteralPath emscripten_package.zip -DestinationPath emsdk\emscripten
+        Expand-Archive -LiteralPath emscripten-package.zip -DestinationPath emsdk\emscripten
         Expand-Archive -LiteralPath llvm-arm64.zip -DestinationPath emsdk
         Expand-Archive -LiteralPath binaryen-arm64.zip -DestinationPath emsdk
         cd emsdk
@@ -254,7 +287,7 @@ jobs:
     - name: Archive wasm-binaries-arm64.zip
       uses: actions/upload-artifact@v3
       with:
-        name: wasm-binaries-arm64.zip
+        name: wasm-binaries-arm64
         path: emsdk/wasm-binaries-arm64.zip
         retention-days: 3
 
