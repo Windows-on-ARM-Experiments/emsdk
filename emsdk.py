@@ -249,12 +249,13 @@ def vswhere(version):
     if not program_files:
       program_files = os.environ['ProgramFiles']
     vswhere_path = os.path.join(program_files, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
-    output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + ('ARM64' if ARCH == 'aarch64' else 'x86.x64'), '-property', 'installationPath', '-format', 'json']))
+    output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.' + ('ARM64' if ARCH == 'aarch64' else 'x86.x64'), '-property', 'installationPath', '-format', 'json']))
+
     # Visual Studio 2017 Express is not included in the above search, and it
     # does not have the VC.Tools.x86.x64 tool, so do a catch-all attempt as a
     # fallback, to detect Express version.
     if not output:
-      output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-version', '[%s.0,%s.0)' % (version, version + 1), '-products', '*', '-property', 'installationPath', '-format', 'json']))
+      output = json.loads(subprocess.check_output([vswhere_path, '-latest', '-prerelease', '-version', '[%s.0,%s.0)' % (version, version + 1), '-products', '*', '-property', 'installationPath', '-format', 'json']))
       if not output:
         return ''
     return str(output[0]['installationPath'])
@@ -1419,7 +1420,11 @@ def emscripten_npm_install(tool, directory):
       return False
     node_path = os.path.dirname(npm_fallback)
   else:
-    node_path = os.path.join(node_tool.installation_path(), 'bin')
+    if node_tool.custom_install_script == 'build_node':
+      build_root = node_build_root(node_tool)
+    else:
+      build_root = node_tool.installation_path()
+    node_path = os.path.join(build_root, 'bin')
 
   npm = os.path.join(node_path, 'npm' + ('.cmd' if WINDOWS else ''))
   env = os.environ.copy()
@@ -1452,7 +1457,7 @@ def emscripten_npm_install(tool, directory):
     closure_compiler_native = 'google-closure-compiler-linux'
   if MACOS and ARCH in ('x86', 'x86_64'):
     closure_compiler_native = 'google-closure-compiler-osx'
-  if WINDOWS and ARCH in ('x86_64'):
+  if WINDOWS and ARCH == 'x86_64':
     closure_compiler_native = 'google-closure-compiler-windows'
 
   if closure_compiler_native:
@@ -1519,6 +1524,75 @@ def emscripten_post_install(tool):
     return False
 
   success = emscripten_npm_install(tool, tool.installation_path())
+
+  return True
+
+# Node build scripts:
+def build_node(tool):
+  debug_print('build_node(' + str(tool) + ')')
+
+  src_root = tool.installation_path()
+
+  build_root = node_build_root(tool)
+  if not os.path.isdir(build_root):
+    os.mkdir(build_root)
+
+  # Build
+  if WINDOWS:
+    # TODO: Figure out if the vcbuild.bat cannot install the binaries to the build_root.
+    success = node_vcbuild(src_root)
+  else:
+    # TODO: Add other platforms.
+    pass
+
+  bin_dir = os.path.join(build_root, 'bin')
+  if not os.path.isdir(bin_dir):
+    os.mkdir(bin_dir)
+
+  if not hasattr(tool, 'arch') or tool.arch == 'x86_64':
+    arch = 'x64'
+  elif tool.arch == 'aarch64':
+    arch = 'arm64'
+  else:
+    arch = 'x86'
+  zip_file = os.path.join(src_root, 'out','Release', 'node-v20.0.0-win-' + arch +'.zip')
+  unzip(zip_file, bin_dir)
+
+  return success
+
+
+def uninstall_node(tool):
+  debug_print('uninstall_node(' + str(tool) + ')')
+
+  build_root = node_build_root(tool)
+  print("Deleting path '" + build_root + "'")
+  #remove_tree(build_root)
+
+
+def node_build_root(tool):
+  build_root = tool.installation_path().strip()
+  if build_root.endswith('/') or build_root.endswith('\\'):
+    build_root = build_root[:-1]
+  generator_prefix = cmake_generator_prefix()
+  build_root = build_root + generator_prefix + '_' + str(tool.bitness) + 'bit_node'
+  return build_root
+
+
+def node_vcbuild(src_root):
+  cmdline = [os.path.join(os.path.normpath(src_root), 'vcbuild.bat'), 'package']
+  env = os.environ.copy()
+  env['PATH'] = os.path.dirname(env['EMSDK_PYTHON']) + ';' +env['PATH']
+  if ARCH == 'aarch64':
+    # TODO: Add cross-compilation?
+    # TODO: Try "release" and "custom" parameters.
+    cmdline += ['arm64']
+  elif ARCH == 'x86_64':
+    cmdline += ['openssl-no-asm']
+  result = subprocess.check_call(cmdline, cwd=src_root, env=os.environ.copy())
+  if result != 0:
+      errlog('vcbuild.bat invocation failed with exit code ' + result + '!')
+      errlog('Working directory: ' + src_root)
+      return False
 
   return True
 
@@ -1944,11 +2018,10 @@ class Tool(object):
 
     if hasattr(self, 'activated_path'):
       path = to_unix_path(self.expand_vars(self.activated_path))
-      for p in path:
-        path_items = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
-        if not normalized_contains(path_items, p):
-          debug_print(str(self) + ' is not active, because environment variable PATH item "' + p + '" is not present (PATH=' + os.environ['PATH'] + ')')
-          return False
+      path_items = os.environ['PATH'].replace('\\', '/').split(ENVPATH_SEPARATOR)
+      if not normalized_contains(path_items, path):
+        debug_print(str(self) + ' is not active, because environment variable PATH item "' + path + '" is not present (PATH=' + os.environ['PATH'] + ')')
+        return False
     return True
 
   # If this tool can be installed on this system, this function returns True.
@@ -2058,6 +2131,8 @@ class Tool(object):
         # 'build_fastcomp' is a special one that does the download on its
         # own, others do the download manually.
         pass
+      elif self.custom_install_script == 'build_node':
+        success = build_node(self)
       elif self.custom_install_script == 'build_binaryen':
         success = build_binaryen_tool(self)
       else:
@@ -2104,6 +2179,8 @@ class Tool(object):
     if hasattr(self, 'custom_uninstall_script'):
       if self.custom_uninstall_script == 'uninstall_optimizer':
         uninstall_optimizer(self)
+      elif self.custom_uninstall_script == 'uninstall_node':
+        uninstall_node(self)
       elif self.custom_uninstall_script == 'uninstall_binaryen':
         uninstall_binaryen(self)
       else:
