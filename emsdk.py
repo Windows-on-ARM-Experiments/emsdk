@@ -3058,7 +3058,7 @@ def main(args):
       sdk = find_sdk(name)
       return 'INSTALLED' if sdk and sdk.is_installed() else ''
 
-    if (LINUX or MACOS or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64'):
+    if (LINUX or MACOS or WINDOWS) and (ARCH == 'x86' or ARCH == 'x86_64') or (WINDOWS and ARCH == 'aarch64'):
       print('The *recommended* precompiled SDK download is %s (%s).' % (find_latest_version(), find_latest_hash()))
       print()
       print('To install/activate it, use one of:')

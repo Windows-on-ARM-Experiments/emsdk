@@ -30,7 +30,35 @@ on:
         type: boolean
 
 jobs:
+  install_msbuild:
+    runs-on: [self-hosted, Windows, ARM64, WASM]
+    timeout-minutes: 60
+
+    steps:
+      - name: Install Visual Studio Build Tools
+        run: |
+          Invoke-WebRequest -OutFile vs_buildtools.exe -Uri https://aka.ms/vs/17/release/vs_buildtools.exe
+          Start-Process .\vs_buildtools.exe -ArgumentList "--quiet --wait --norestart --nocache --add Microsoft.Component.MSBuild --add Microsoft.VisualStudio.Component.VC.Tools.ARM64" -NoNewWindow -PassThru -Wait
+
+  bootstrap_emsdk:
+    needs: install_msbuild
+
+    runs-on: [self-hosted, Windows, ARM64, WASM]
+    timeout-minutes: 60
+
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v3
+      - name: Bootstrap emsdk
+        run: |
+          .\emsdk.bat list
+          .\emsdk.bat install latest
+          .\emsdk.bat activate latest
+          .\emsdk.bat list
+
   build_llvm:
+    needs: bootstrap_emsdk
+
     if: ${{ inputs.llvm_build }}
     
     runs-on: [self-hosted, Windows, ARM64, WASM]
@@ -42,6 +70,8 @@ jobs:
           echo "Build LLVM with emsdk"
 
   build_python:
+    needs: bootstrap_emsdk
+
     if: ${{ inputs.python_build }}
     
     runs-on: [self-hosted, Windows, ARM64, WASM]
@@ -53,6 +83,8 @@ jobs:
           echo "Build Python with emsdk"
 
   build_node:
+    needs: bootstrap_emsdk
+
     if: ${{ inputs.node_build }}
     
     runs-on: [self-hosted, Windows, ARM64, WASM]
@@ -64,6 +96,8 @@ jobs:
           echo "Build Node with emsdk" 
 
   build_binaryen:
+    needs: bootstrap_emsdk
+
     if: ${{ inputs.binaryen_build }}
     
     runs-on: [self-hosted, Windows, ARM64, WASM]
@@ -76,6 +110,8 @@ jobs:
 
 
   build_emscripten:
+    needs: bootstrap_emsdk
+
     if: ${{ inputs.emscripten_build }}
     
     runs-on: [self-hosted, Windows, ARM64, WASM]
