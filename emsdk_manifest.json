@@ -109,6 +109,7 @@
     "arch": "aarch64",
     "macos_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/mac/%releases-tag%/wasm-binaries-arm64.tbz2",
     "linux_url": "https://storage.googleapis.com/webassembly/emscripten-releases-builds/linux/%releases-tag%/wasm-binaries-arm64.tbz2",
+    "windows_url": "https://github.com/Windows-on-ARM-Experiments/emsdk/releases/download/v0.1.0-alpha/emsdk-arm64.zip",
     "zipfile_prefix": "%releases-tag%-",
     "install_path": "upstream",
     "activated_path": "%installation_dir%/emscripten",
@@ -432,6 +433,15 @@
   },
   {
     "id": "python",
+    "version": "3.11.1",
+    "bitness": 64,
+    "arch": "aarch64",
+    "windows_url": "https://www.python.org/ftp/python/3.11.1/python-3.11.1-embed-arm64.zip",
+    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
+  },
+  {
+    "id": "python",
     "version": "3.9.2",
     "bitness": 64,
     "arch": "x86_64",
@@ -739,6 +749,14 @@
     "bitness": 64,
     "uses": ["node-14.18.2-64bit", "python-3.9.2-nuget-64bit", "java-8.152-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "win",
+    "custom_install_script": "emscripten_npm_install"
+  },
+  {
+    "version": "releases-upstream-%releases-tag%",
+    "bitness": 64,
+    "uses": ["python-3.11.1-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "os": "win",
+    "arch": "aarch64",
     "custom_install_script": "emscripten_npm_install"
   },
   {
