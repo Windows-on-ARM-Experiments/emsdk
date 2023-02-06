@@ -186,7 +186,7 @@ jobs:
         Expand-Archive -LiteralPath emscripten_package.zip -DestinationPath emsdk\emscripten
         Expand-Archive -LiteralPath llvm-arm64.zip -DestinationPath emsdk
         cd emsdk
-        Compress-Archive -Path * -DestinationPath wasm-binaries
+        Compress-Archive -Path * -DestinationPath wasm-binaries-arm64
 
     - name: Archive wasm-binaries-arm64.zip
       uses: actions/upload-artifact@v3
