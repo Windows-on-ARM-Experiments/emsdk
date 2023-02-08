@@ -13,6 +13,11 @@ on:
         required: false
         default: false
         type: boolean
+      binaryen_build:
+        description: 'Binaryen Arm64'
+        required: false
+        default: false
+        type: boolean
       emscripten_build:
         description: 'Emscripten'
         required: false
@@ -126,7 +131,30 @@ jobs:
           -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF
         cmake --build build_arm64 --config MinSizeRel
 
-  build-nodejs-arm64:
+  build-binaryen:
+    if: ${{ inputs.binaryen_build || inputs.wasm_binaries_build}}
+
+    - name: Build Binaryen for Arm64
+      shell: cmd
+      run: |
+        git clone https://github.com/WebAssembly/binaryen.git --single-branch --depth 1
+        cd binaryen
+        git submodule init
+        git submodule update
+        if exist bin rmdir /s /q bin
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" arm64
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER='ccache' .
+        ninja
+        Compress-Archive -Path bin -DestinationPath binaryen-arm64
+
+
+    - name: Archive binaryen-arm64.zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: binaryen-arm64.zip
+        path: binaryen-arm64.zip
+
+  build-nodejs:
     if: ${{ inputs.nodejs_build }}
 
     runs-on: [self-hosted, Windows, ARM64, WASM]
@@ -163,9 +191,9 @@ jobs:
         path: emscripten_package.zip
         retention-days: 1
 
-  buils_emsdk:
-    if: ${{ inputs.emsdk_build }}
-    needs: [build_emscripten,build-llvm-webassembly-arm64]
+  build-wasm-binaries:
+    if: ${{ inputs.wasm_binaries_build }}
+    needs: [build-emscripten, build-binaryen, build-llvm-webassembly-arm64]
 
     runs-on: [windows-latest]
 
@@ -178,13 +206,18 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: llvm-arm64.zip
-        
-    - name: Build emsdk arm64
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: binaryen-arm64.zip
+
+    - name: Pack wasm-binaries for Arm64
       run: |
         ls
         New-Item -ItemType Directory -Force -Path emsdk/emscripten
         Expand-Archive -LiteralPath emscripten_package.zip -DestinationPath emsdk\emscripten
         Expand-Archive -LiteralPath llvm-arm64.zip -DestinationPath emsdk
+        Expand-Archive -LiteralPath binaryen-arm64.zip -DestinationPath emsdk
         cd emsdk
         Compress-Archive -Path * -DestinationPath wasm-binaries-arm64
 
