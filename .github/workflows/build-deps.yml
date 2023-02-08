@@ -134,6 +134,9 @@ jobs:
   build-binaryen:
     if: ${{ inputs.binaryen_build || inputs.wasm_binaries_build}}
 
+    runs-on: [self-hosted, Windows, ARM64, WASM]
+
+    steps:
     - name: Build Binaryen for Arm64
       shell: cmd
       run: |
