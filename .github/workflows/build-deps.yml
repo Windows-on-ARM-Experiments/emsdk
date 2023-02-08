@@ -154,7 +154,8 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: binaryen-arm64.zip
-        path: binaryen-arm64.zip
+        path: binaryen/binaryen-arm64.zip
+        retention-days: 1
 
   build-nodejs:
     if: ${{ inputs.nodejs_build }}
@@ -228,4 +229,5 @@ jobs:
       with:
         name: wasm-binaries-arm64.zip
         path: emsdk/wasm-binaries-arm64.zip
+        retention-days: 3
 
