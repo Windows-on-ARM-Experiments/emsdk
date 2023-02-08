@@ -28,15 +28,15 @@ on:
         required: false
         default: false
         type: boolean
-      emsdk_build:
-        description: 'emsdk arm64'
+      wasm_binaries_build:
+        description: 'WASM binaries arm64'
         required: false
         default: false
         type: boolean
 
 jobs:
   build-llvm-webassembly-arm64:
-    if: ${{ inputs.llvm_build || inputs.emsdk_build }}
+    if: ${{ inputs.llvm_build || inputs.wasm_binaries_build }}
 
     runs-on: [self-hosted, Windows, ARM64, WASM]
     timeout-minutes: 600
@@ -171,8 +171,8 @@ jobs:
         cd node
         .\vcbuild openssl-no-asm arm64
 
-  build_emscripten:
-    if: ${{ inputs.emscripten_build || inputs.emsdk_build }}
+  build-emscripten:
+    if: ${{ inputs.emscripten_build || inputs.wasm_binaries_build }}
 
     runs-on: [ubuntu-latest]
 
