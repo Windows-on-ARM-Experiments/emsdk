@@ -148,7 +148,6 @@ jobs:
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" arm64
         cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER='ccache' .
         ninja
-        Compress-Archive -Path bin -DestinationPath binaryen-arm64
 
 
     - name: Archive binaryen-arm64.zip
