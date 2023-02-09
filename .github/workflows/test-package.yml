@@ -1,0 +1,25 @@
+name: Test the release package
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      emscripten_test_suite:
+        description: 'Emscripten test suite'
+        required: true
+        default: '*'
+        type: string
+
+defaults:
+  run:
+    working-directory: test-package
+
+jobs:
+  bootstrap-workflow:
+    runs-on: [self-hosted, Windows, ARM64, WASM]
+    timeout-minutes: 10
+
+    steps:
+      - name: Create working directory
+        working-directory: ${{ github.workspace }}
+        run: New-Item -ItemType Directory -Force -Path test-package
