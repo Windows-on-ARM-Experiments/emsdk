@@ -1,0 +1,97 @@
+name: Test the release package
+
+on:
+  # TODO: Remove push trigger before merge.
+  push:
+  workflow_dispatch:
+    inputs:
+      emscripten_repository:
+        description: 'Emscripten repository'
+        required: true
+        default: 'Windows-on-ARM-Experiments/emscripten'
+        type: string
+      emscripten_branch:
+        description: 'Emscripten repository branch'
+        required: true
+        default: 'fix-unit-tests-arm64'
+        type: string
+      emscripten_test_suite:
+        description: 'Emscripten test suite'
+        required: true
+        default: 'test_hello_world'
+        type: string
+
+defaults:
+  run:
+    working-directory: test-package
+
+jobs:
+  bootstrap-workflow:
+    runs-on: [ self-hosted, Windows, ARM64, WASM ]
+    timeout-minutes: 10
+
+    steps:
+      - name: Create working directory
+        working-directory: ${{ github.workspace }}
+        run: New-Item -ItemType Directory -Force -Path test-package
+
+      - name: Git checkout
+        uses: actions/checkout@v3
+        with:
+          path: test-package
+
+  install-package:
+    needs: bootstrap-workflow
+
+    runs-on: [ self-hosted, Windows, ARM64, WASM ]
+    timeout-minutes: 10
+
+    steps:
+      - name: List Emscripten packages
+        run: .\emsdk.ps1 list
+
+      - name: Install latest release package
+        run: .\emsdk.ps1 install latest
+
+      - name: Activate latest release package
+        run: .\emsdk.ps1 activate latest
+
+      - name: List Emscripten packages
+        run: .\emsdk.ps1 list
+
+  bootstrap-tests:
+    needs: install-package
+
+    runs-on: [ self-hosted, Windows, ARM64, WASM ]
+    timeout-minutes: 10
+
+    steps:
+      - name: Git checkout Emscripten
+        uses: actions/checkout@v3
+        with:
+          # TODO: Remove parameters value fallback before merge.
+          repository: ${{ inputs.emscripten_repository || 'Windows-on-ARM-Experiments/emscripten' }}
+          ref: ${{ inputs.emscripten_branch || 'fix-unit-tests-arm64' }}
+          path: test-package/emscripten
+          submodules: 'recursive'
+
+      - name: Install Node packages
+        working-directory: test-package/emscripten
+        run: npm ci
+
+      - name: Install Python packages to emsdk Python
+        if: false # TODO: Enable when libxml installation issue will be resolved.
+        run: ${{ github.workspace }}\test-package\.github\bin\pip-install-requirements.ps1
+
+  run-tests:
+    needs: bootstrap-tests
+
+    runs-on: [ self-hosted, Windows, ARM64, WASM ]
+    timeout-minutes: 120
+
+    steps:
+      - name: Run unit tests with emsdk Python
+        # TODO: Remove parameters value fallback before merge.
+        run: ${{ github.workspace }}\test-package\.github\bin\run-tests.ps1 ${{ inputs.emscripten_test_suite || 'test_hello_world' }}
+        env:
+          EMCC_DEBUG: 1 # Disables parallel tests execution which leads to race conditions.
