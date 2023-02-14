@@ -13,6 +13,11 @@ on:
         required: false
         default: false
         type: boolean
+      python_build:
+        description: 'Python Arm64'
+        required: false
+        default: false
+        type: boolean
       binaryen_build:
         description: 'Binaryen Arm64'
         required: false
@@ -129,6 +134,29 @@ jobs:
           -DLLVM_ENABLE_PROJECTS='lld;clang' -DLLVM_TARGETS_TO_BUILD="host;WebAssembly" `
           -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF
         cmake --build build_arm64 --config MinSizeRel
+
+  build-python:
+    if: ${{ inputs.python_build }}
+
+    runs-on: [self-hosted, Windows, ARM64, WASM]
+
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v3
+        with:
+          path: emsdk
+
+      - name: Build Emscripten Python package for Arm64
+        working-directory: emsdk
+        shell: cmd
+        run: python scripts\update_python.py
+
+      - name: Archive python-3.9.2-arm64-4+pywin32.zip
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-3.9.10-arm64-4+pywin32
+          path: emsdk/python-3.9.10-arm64-4+pywin32.zip
+          retention-days: 3
 
   build-binaryen:
     if: ${{ inputs.binaryen_build || inputs.wasm_binaries_build}}
