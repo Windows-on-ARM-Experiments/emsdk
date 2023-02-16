@@ -26,9 +26,9 @@ defaults:
     working-directory: test-package
 
 jobs:
-  bootstrap-workflow:
-    runs-on: [ self-hosted, Windows, ARM64, WASM ]
-    timeout-minutes: 10
+  test-binary-package:
+    runs-on: windows-latest
+    timeout-minutes: 240
 
     steps:
       - name: Create working directory
@@ -40,32 +40,18 @@ jobs:
         with:
           path: test-package
 
-  install-package:
-    needs: bootstrap-workflow
-
-    runs-on: [ self-hosted, Windows, ARM64, WASM ]
-    timeout-minutes: 10
-
-    steps:
       - name: List Emscripten packages
         run: .\emsdk.ps1 list
 
       - name: Install latest release package
-        run: .\emsdk.ps1 install latest
+        run: .\emsdk.ps1 install tot
 
       - name: Activate latest release package
-        run: .\emsdk.ps1 activate latest
+        run: .\emsdk.ps1 activate tot
 
       - name: List Emscripten packages
         run: .\emsdk.ps1 list
 
-  bootstrap-tests:
-    needs: install-package
-
-    runs-on: [ self-hosted, Windows, ARM64, WASM ]
-    timeout-minutes: 10
-
-    steps:
       - name: Git checkout Emscripten
         uses: actions/checkout@v3
         with:
@@ -80,16 +66,8 @@ jobs:
         run: npm ci
 
       - name: Install Python packages to emsdk Python
-        if: false # TODO: Enable when libxml installation issue will be resolved.
         run: ${{ github.workspace }}\test-package\.github\bin\pip-install-requirements.ps1
 
-  run-tests:
-    needs: bootstrap-tests
-
-    runs-on: [ self-hosted, Windows, ARM64, WASM ]
-    timeout-minutes: 120
-
-    steps:
       - name: Run unit tests with emsdk Python
         # TODO: Remove parameters value fallback before merge.
         run: ${{ github.workspace }}\test-package\.github\bin\run-tests.ps1 ${{ inputs.emscripten_test_suite || 'test_hello_world' }}
