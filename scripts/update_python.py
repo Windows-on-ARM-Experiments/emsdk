@@ -31,10 +31,13 @@ import subprocess
 import sys
 from subprocess import check_call
 
-version = '3.9.2'
+version = '3.9.10' # 3.9.7 is the first available, but 3.9.10 is the latest in the 3.9 series
 major_minor_version = '.'.join(version.split('.')[:2])  # e.g. '3.9.2' -> '3.9'
-download_url = 'https://www.nuget.org/api/v2/package/python/%s' % version
 revision = '4'
+download_urls = {
+    'amd64':  'https://www.nuget.org/api/v2/package/python/%s' % version,
+    'arm64': 'https://www.nuget.org/api/v2/package/pythonarm64/%s' % version
+}
 
 pywin32_version = '227'
 pywin32_base = 'https://github.com/mhammond/pywin32/releases/download/b%s/' % pywin32_version
@@ -60,18 +63,19 @@ def zip_cmd():
     return ['zip', '-rq']
 
 
-def make_python_patch():
-    pywin32_filename = 'pywin32-%s.win-amd64-py%s.exe' % (pywin32_version, major_minor_version)
-    filename = 'python-%s-amd64.zip' % (version)
-    out_filename = 'python-%s-%s-amd64+pywin32.zip' % (version, revision)
+def make_python_patch(arch):
+    # TODO: pywin32 does not support Arm64 yet (https://github.com/mhammond/pywin32/issues/1462)
+    pywin32_filename = 'pywin32-%s.win-%s-py%s.exe' % (pywin32_version, 'amd64', major_minor_version)
+    filename = 'python-%s-%s.zip' % (version, arch)
+    out_filename = 'python-%s-%s-%s+pywin32.zip' % (version, arch, revision)
     if not os.path.exists(pywin32_filename):
         url = pywin32_base + pywin32_filename
         print('Downloading pywin32: ' + url)
         urllib.request.urlretrieve(url, pywin32_filename)
 
     if not os.path.exists(filename):
-        print('Downloading python: ' + download_url)
-        urllib.request.urlretrieve(download_url, filename)
+        print('Downloading python: ' + download_urls[arch])
+        urllib.request.urlretrieve(download_urls[arch], filename)
 
     os.mkdir('python-nuget')
     check_call(unzip_cmd() + [os.path.abspath(filename)], cwd='python-nuget')
@@ -175,7 +179,11 @@ def build_python():
 
 def main():
     if sys.platform.startswith('win') or '--win32' in sys.argv:
-        make_python_patch()
+        if platform.machine() == 'ARM64' or '--arm64' in sys.argv:
+            arch = 'arm64'
+        else:
+            arch = 'amd64'
+        make_python_patch(arch)
     else:
         build_python()
     return 0
