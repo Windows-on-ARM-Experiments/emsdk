@@ -1,0 +1,71 @@
+name: Test the release package
+
+on:
+  workflow_dispatch:
+    inputs:
+      emscripten_repository:
+        description: 'Emscripten repository'
+        required: true
+        default: 'Windows-on-ARM-Experiments/emscripten'
+        type: string
+      emscripten_branch:
+        description: 'Emscripten repository branch'
+        required: true
+        default: 'fix-unit-tests-arm64'
+        type: string
+      emscripten_test_suite:
+        description: 'Emscripten test suite'
+        required: true
+        default: 'test_hello_world'
+        type: string
+
+defaults:
+  run:
+    working-directory: test-package
+
+jobs:
+  test-binary-package:
+    runs-on: windows-latest
+    timeout-minutes: 240
+
+    steps:
+      - name: Create working directory
+        working-directory: ${{ github.workspace }}
+        run: New-Item -ItemType Directory -Force -Path test-package
+
+      - name: Git checkout
+        uses: actions/checkout@v3
+        with:
+          path: test-package
+
+      - name: List Emscripten packages
+        run: .\emsdk.ps1 list
+
+      - name: Install latest release package
+        run: .\emsdk.ps1 install tot
+
+      - name: Activate latest release package
+        run: .\emsdk.ps1 activate tot
+
+      - name: List Emscripten packages
+        run: .\emsdk.ps1 list
+
+      - name: Git checkout Emscripten
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.emscripten_repository }}
+          ref: ${{ inputs.emscripten_branch }}
+          path: test-package/emscripten
+          submodules: 'recursive'
+
+      - name: Install Node packages
+        working-directory: test-package/emscripten
+        run: npm ci
+
+      - name: Install Python packages to emsdk Python
+        run: ${{ github.workspace }}\test-package\.github\bin\pip-install-requirements.ps1
+
+      - name: Run unit tests with emsdk Python
+        run: ${{ github.workspace }}\test-package\.github\bin\run-tests.ps1 ${{ inputs.emscripten_test_suite }}
+        env:
+          EMCC_DEBUG: 1 # Disables parallel tests execution which leads to race conditions.

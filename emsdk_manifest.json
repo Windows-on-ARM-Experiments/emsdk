@@ -356,7 +356,7 @@
     "arch": "aarch64",
     "bitness": 64,
     "windows_url": "https://github.com/Windows-on-ARM-Experiments/emsdk/releases/download/v0.1.0-alpha/node-v20.0.0-pre-win-arm64.zip",
-    "activated_path": "%installation_dir%",
+    "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
@@ -443,10 +443,10 @@
   },
   {
     "id": "python",
-    "version": "3.11.1",
+    "version": "3.9.10-nuget",
     "bitness": 64,
     "arch": "aarch64",
-    "windows_url": "https://www.python.org/ftp/python/3.11.1/python-3.11.1-embed-arm64.zip",
+    "windows_url": "https://github.com/Windows-on-ARM-Experiments/emsdk/releases/download/v0.1.0-alpha/python-3.9.10-arm64-4+pywin32.zip",
     "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
@@ -764,7 +764,7 @@
   {
     "version": "releases-upstream-%releases-tag%",
     "bitness": 64,
-    "uses": ["node-20.0.0-pre-64bit", "python-3.11.1-64bit", "releases-upstream-%releases-tag%-64bit"],
+    "uses": ["node-20.0.0-pre-64bit", "python-3.9.10-nuget-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "win",
     "arch": "aarch64",
     "custom_install_script": "emscripten_npm_install"
