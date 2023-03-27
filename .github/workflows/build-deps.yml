@@ -103,7 +103,7 @@ jobs:
               Remove-Item $tool
             }
           }
-        Compress-Archive -Path bin,lib\clang -DestinationPath llvm-arm64
+        Compress-Archive -Path bin,lib -DestinationPath llvm-arm64
 
     - name: Archive llvm-arm64.zip
       uses: actions/upload-artifact@v3
