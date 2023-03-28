@@ -54,7 +54,7 @@ jobs:
         git clone --config core.autocrlf=false https://github.com/llvm/llvm-project.git --single-branch --depth 1
         cd llvm-project
         if exist build_arm64 rmdir /s /q build_arm64
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" arm64
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" arm64
         cmake -G Ninja -S llvm -B build_arm64 ^
           -DCLANG_ENABLE_ARCMT=OFF ^
           -DCLANG_ENABLE_STATIC_ANALYZER=OFF ^
@@ -62,7 +62,7 @@ jobs:
           -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON ^
           -DCMAKE_CXX_COMPILER_LAUNCHER='ccache' ^
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ^
-          -DCMAKE_LINKER="C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Tools\Llvm\x64\bin\lld-link.exe" ^
+          -DCMAKE_LINKER="C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\Llvm\x64\bin\lld-link.exe" ^
           -DLLVM_BUILD_LLVM_DYLIB=OFF ^
           -DLLVM_LINK_LLVM_DYLIB=OFF ^
           -DLLVM_DISTRIBUTION_COMPONENTS='clang;lld;llvm-ar;llvm-addr2line;llvm-cxxfilt;llvm-dwarfdump;llvm-dwp;llvm-nm;llvm-objcopy;llvm-objdump;llvm-ranlib;llvm-readobj;llvm-size;llvm-strings;llvm-strip;llvm-symbolizer;clang-resource-headers' ^
@@ -172,7 +172,7 @@ jobs:
         git submodule init
         git submodule update
         if exist bin rmdir /s /q bin
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" arm64
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" arm64
         cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER='ccache' .
         ninja
 
