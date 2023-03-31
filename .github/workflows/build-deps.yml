@@ -103,8 +103,8 @@ jobs:
               Remove-Item $tool
             }
           }
-        New-Item -ItemType Directory llvm-arm64
         New-Item -ItemType Directory llvm-arm64\lib
+        Copy-Item -Recurse bin llvm-arm64
         Copy-Item -Recurse lib\clang llvm-arm64\lib
         Compress-Archive -Path llvm-arm64\bin,llvm-arm64\lib -DestinationPath llvm-arm64
         Remove-Item -Recurse llvm-arm64
