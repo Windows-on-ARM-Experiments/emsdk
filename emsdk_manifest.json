@@ -300,6 +300,7 @@
     "arch": "aarch64",
     "bitness": 64,
     "macos_url": "node-v14.18.2-darwin-x64.tar.gz",
+    "windows_url": "node-v14.18.2-win-x64.zip",
     "linux_url": "node-v14.18.2-linux-arm64.tar.xz",
     "activated_path": "%installation_dir%/bin",
     "activated_cfg": "NODE_JS='%installation_dir%/bin/node%.exe%'",
@@ -361,6 +362,34 @@
     "activated_env": "EMSDK_NODE=%installation_dir%/bin/node%.exe%"
   },
 
+  {
+    "id": "node",
+    "version": "main",
+    "bitness": 32,
+    "append_bitness": false,
+    "url": "https://github.com/nodejs/node.git",
+    "git_branch": "main",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_node",
+    "custom_uninstall_script": "uninstall_node",
+    "activated_cfg": "NODE_JS='%installation_dir%%generator_prefix%_64bit_node/bin/node%.exe%'",
+    "activated_path": "%installation_dir%%generator_prefix%_64bit_node/bin",
+    "activated_env": "EMSDK_NODE=%installation_dir%%generator_prefix%_64bit_node/bin/node%.exe%"
+  },
+  {
+    "id": "node",
+    "version": "main",
+    "bitness": 64,
+    "append_bitness": false,
+    "url": "https://github.com/Windows-on-ARM-Experiments/node.git",
+    "git_branch": "fix-vswhere-arm64",
+    "cmake_build_type": "Release",
+    "custom_install_script": "build_node",
+    "custom_uninstall_script": "uninstall_node",
+    "activated_cfg": "NODE_JS='%installation_dir%%generator_prefix%_64bit_node/bin/node%.exe%'",
+    "activated_path": "%installation_dir%%generator_prefix%_64bit_node/bin",
+    "activated_env": "EMSDK_NODE=%installation_dir%%generator_prefix%_64bit_node/bin/node%.exe%"
+  },
 
   {
     "id": "python",
@@ -476,6 +505,15 @@
     "macos_url": "python-3.9.2-1-macos-arm64.tar.gz",
     "activated_cfg": "PYTHON='%installation_dir%/bin/python3'",
     "activated_env": "EMSDK_PYTHON=%installation_dir%/bin/python3;SSL_CERT_FILE=%installation_dir%/lib/python3.9/site-packages/certifi/cacert.pem"
+  },
+  {
+    "id": "python",
+    "version": "3.11.1",
+    "bitness": 64,
+    "arch": "aarch64",
+    "windows_url": "https://www.python.org/ftp/python/3.11.1/python-3.11.1-embed-arm64.zip",
+    "activated_cfg": "PYTHON='%installation_dir%/python.exe'",
+    "activated_env": "EMSDK_PYTHON=%installation_dir%/python.exe"
   },
   {
     "id": "java",
@@ -674,7 +712,15 @@
   {
     "version": "upstream-main",
     "bitness": 64,
+    "arch": "x86_64",
     "uses": ["python-3.9.2-nuget-64bit", "llvm-git-main-64bit", "node-14.18.2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
+    "os": "win"
+  },
+  {
+    "version": "upstream-main",
+    "bitness": 64,
+    "arch": "aarch64",
+    "uses": ["python-3.11.1-64bit", "llvm-git-main-64bit", "node-14.18.2-64bit", "emscripten-main-64bit", "binaryen-main-64bit"],
     "os": "win"
   },
   {
@@ -759,6 +805,7 @@
     "bitness": 64,
     "uses": ["node-14.18.2-64bit", "python-3.9.2-nuget-64bit", "java-8.152-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "win",
+    "arch": "x86_64",
     "custom_install_script": "emscripten_npm_install"
   },
   {
@@ -766,8 +813,7 @@
     "bitness": 64,
     "uses": ["node-20.0.0-pre-64bit", "python-3.9.10-nuget-64bit", "releases-upstream-%releases-tag%-64bit"],
     "os": "win",
-    "arch": "aarch64",
-    "custom_install_script": "emscripten_npm_install"
+    "arch": "aarch64"
   },
   {
     "version": "releases-fastcomp-%releases-tag%",

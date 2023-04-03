@@ -4,84 +4,228 @@ on:
   workflow_dispatch:
     inputs:
       llvm_build:
-        description: 'LLVM Arm64 build'
+        description: 'Build LLVM'
         required: false
         default: false
         type: boolean
       python_build:
-        description: 'Python Arm64 build'
+        description: 'Build Python'
         required: false
-        default: false
+        default: true
         type: boolean
       node_build:
-        description: 'Node Arm64 build'
+        description: 'Build Node'
         required: false
-        default: false
+        default: true
         type: boolean
       binaryen_build:
-        description: 'Binaryen Arm64 build'
+        description: 'Build Binaryen'
         required: false
-        default: false
+        default: true
         type: boolean
       emscripten_build:
-        description: 'Emscripten Arm64 build'
+        description: 'Build Emscripten'
+        required: false
+        default: true
+        type: boolean
+      install_vsbuildtools:
+        description: 'Install Visual Studio Build Tools'
         required: false
         default: false
         type: boolean
+      install_7zip:
+        description: 'Install 7-Zip'
+        required: false
+        default: false
+        type: boolean
+defaults:
+  run:
+    working-directory: build-with-emsdk
 
 jobs:
-  build_llvm:
-    if: ${{ inputs.llvm_build }}
-    
+  bootstrap_workflow:
     runs-on: [self-hosted, Windows, ARM64, WASM]
-    timeout-minutes: 60
+    timeout-minutes: 10
 
     steps:
-      - name: Build LLVM wth emsdk
+      - name: Create working directory
+        working-directory: ${{ github.workspace }}
+        run: New-Item -ItemType Directory -Force -Path build-with-emsdk
+
+      - name: Install 7-Zip
+        if: ${{ inputs.install_7zip }}
         run: |
-          echo "Build LLVM with emsdk"
+          Invoke-WebRequest -OutFile 7z_installer.exe -Uri https://www.7-zip.org/a/7z2201-arm64.exe
+          Start-Process -FilePath .\7z_installer.exe -ArgumentList "/S" -NoNewWindow -Wait
+
+      - name: Add 7-Zip to PATH
+        run: echo "PATH=$env:PATH;C:\Program Files\7-Zip" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Check 7-Zip installed
+        run: 7z
+
+      - name: Git checkout
+        uses: actions/checkout@v3
+        with:
+          path: build-with-emsdk
+
+      - name: Install Visual Studio Build Tools
+        if: ${{ inputs.install_vsbuildtools }}
+        run: ${{ github.workspace }}\build-with-emsdk\.github\bin\install-build-tools.ps1
+
+      - name: Check Visual Studio Build Tools installed
+        shell: cmd
+        run: |
+          "C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" arm64
+
+      - name: Bootstrap emsdk
+        run: |
+          .\emsdk.ps1 list
+          .\emsdk.ps1 install latest
+          .\emsdk.ps1 activate latest
+          .\emsdk.ps1 list
+
+  build_llvm:
+    runs-on: [self-hosted, Windows, ARM64, WASM]
+    timeout-minutes: 1200
+
+    needs: bootstrap_workflow
+
+    if: ${{ inputs.llvm_build }}
+
+    steps:
+      - name: Build LLVM with emsdk
+        run: .\emsdk.ps1 install llvm-git-main-64bit
+
+      - name: Activate LLVM
+        run: .\emsdk.ps1 activate llvm-git-main-64bit
 
   build_python:
-    if: ${{ inputs.python_build }}
-    
     runs-on: [self-hosted, Windows, ARM64, WASM]
     timeout-minutes: 60
 
+
+    needs: bootstrap_workflow
+
+    if: ${{ inputs.python_build }}
+
     steps:
-      - name: Build Python with emsdk
-        run: |
-          echo "Build Python with emsdk"
+      - name: Install Python with emsdk
+        run: .\emsdk.ps1 install python-3.11.1-64bit
+
+      - name: Activate Python
+        run: .\emsdk.ps1 activate python-3.11.1-64bit
 
   build_node:
+    runs-on: [self-hosted, Windows, ARM64, WASM]
+    timeout-minutes: 240
+
+    needs: bootstrap_workflow
+
     if: ${{ inputs.node_build }}
     
-    runs-on: [self-hosted, Windows, ARM64, WASM]
-    timeout-minutes: 60
-
     steps:
-      - name: Build Node with emsdk
+      - name: Add 7-Zip to PATH
+        run: echo "PATH=$env:PATH;C:\Program Files\7-Zip" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Check 7-Zip installed
+        run: 7z
+
+      - name: Check Visual Studio Build Tools installed
+        shell: cmd
         run: |
-          echo "Build Node with emsdk" 
+          "C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" arm64
+
+      - name: Build Node with emsdk
+        shell: cmd
+        run: ${{ github.workspace }}\build-with-emsdk\.github\bin\emsdk-build-node.bat 
+          
+      - name: Activate Node
+        run: .\emsdk.ps1 activate node-main-64bit
+ 
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: node-main-vs2022-arm64.zip
+          path: node/main/out/Release/node-v20.0.0-win-arm64.zip
+          retention-days: 1
 
   build_binaryen:
+    runs-on: [self-hosted, Windows, ARM64, WASM]
+    timeout-minutes: 60
+
+    needs: bootstrap_workflow
+
     if: ${{ inputs.binaryen_build }}
     
-    runs-on: [self-hosted, Windows, ARM64, WASM]
-    timeout-minutes: 60
-
     steps:
       - name: Build Binaryen with emsdk
-        run: |
-          echo "Build Binaryen with emsdk" 
+        run: .\emsdk.ps1 install binaryen-main-64bit
 
+      - name: Activate Binaryen
+        run: .\emsdk.ps1 activate binaryen-main-64bit
 
   build_emscripten:
-    if: ${{ inputs.emscripten_build }}
-    
     runs-on: [self-hosted, Windows, ARM64, WASM]
     timeout-minutes: 60
 
+    needs: [build_node]
+
+    if: ${{ inputs.emscripten_build }}
+    
     steps:
       - name: Build Emscripten with emsdk
+        run: .\emsdk.ps1 install emscripten-main-64bit
+
+      - name: Activate Emscripten
+        run: .\emsdk.ps1 activate emscripten-main-64bit
+
+  verify_arm64:
+    runs-on: [self-hosted, Windows, ARM64, WASM]
+    timeout-minutes: 60
+
+    needs: [build_llvm, build_python, build_node, build_binaryen, build_emscripten]
+
+    if: |
+      always() &&
+      (needs.build_llvm.result == 'success' || needs.build_llvm.result == 'skipped' ||
+      needs.build_python.result == 'success' || needs.build_python.result == 'skipped' ||
+      needs.build_node.result == 'success' || needs.build_node.result == 'skipped' ||
+      needs.build_emscripten.result == 'success' || needs.build_emscripten.result == 'skipped' ||
+      needs.build_binaryen.result == 'success' || needs.build_binaryen.result == 'skipped')
+
+    steps:
+      - name: Verify Arm64 LLVM binaries
+        if: needs.build_llvm.result == 'success'
         run: |
-          echo "Build Emscripten with emsdk"
+          echo "TODO: Verify Arm64 LLVM binaries"
+ 
+      - name: Verify Arm64 Python binaries
+        if: needs.build_python.result == 'success'
+        run: |
+          echo "TODO: Verify Arm64 Python binaries"
+ 
+      - name: Verify Arm64 Node binaries
+        if: needs.build_node.result == 'success'
+        run: |
+          echo "TODO: Verify Arm64 Node binaries"
+
+      - name: Verify Arm64 Binaryen binaries
+        if: needs.build_emscripten.result == 'success'
+        run: |
+          echo "TODO: Verify Arm64 Emscripten binaries"
+
+      - name: Verify Arm64 Emscripten binaries
+        if: needs.build_binaryen.result == 'success'
+        run: |
+          echo "TODO: Verify Arm64 Binaryen binaries"
+
+  run_unit_tests:
+    runs-on: [self-hosted, Windows, ARM64, WASM]
+    timeout-minutes: 60
+
+    needs: [verify_arm64, build_llvm, build_emscripten]
+
+    steps:
+      - name: Run Emscripten unit test
+        run: $env:EMSDK_PYTHON emscripten\main\test\runner.py *
